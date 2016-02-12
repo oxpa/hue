@@ -2213,6 +2213,15 @@ ${ require.config() }
       window.onbeforeunload = function (e) {
         viewModel.selectedNotebook().close();
       };
+      $(window).data('beforeunload', window.onbeforeunload);
+
+      // Tricks for not triggering the closing of the query on download
+      $("a.download").hover(function(){alert('aaa');
+        window.onbeforeunload = null;
+        }, function() {
+          window.onbeforeunload = $(window).data('beforeunload');
+        }
+      );
 
       $(".preview-sample").css("right", (10 + $.scrollbarWidth()) + "px");
 
