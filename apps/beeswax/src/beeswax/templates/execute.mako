@@ -33,7 +33,7 @@ ${ layout.menubar(section='query') }
 <div id="beeswax-execute">
   <div id="query-editor" class="container-fluid hide section">
   <div class="panel-container">
-  <div class="left-panel" id="navigator">
+  <div class="left-panel" id="navigator" style="height: 100%">
     <ul class="nav nav-tabs" style="margin-bottom: 0">
       <li class="active"><a href="#navigatorTab" data-toggle="tab" class="sidetab">${_('Assist')}</a></li>
       <li><a href="#settingsTab" data-toggle="tab" class="sidetab">${_('Settings')} <span data-bind="visible:design.settings.values().length + design.fileResources.values().length + design.functions.values().length > 0, text: design.settings.values().length + design.fileResources.values().length + design.functions.values().length" class="badge badge-info">12</span></a></li>
@@ -41,9 +41,9 @@ ${ layout.menubar(section='query') }
       <li><a href="#sessionTab" data-toggle="tab" class="sidetab">${_('Session')}</a></li>
       % endif
     </ul>
-    <div class="tab-content" style=" overflow: hidden;">
-      <div class="tab-pane active" id="navigatorTab">
-        <div class="card card-small card-tab" style="margin-bottom: 0;">
+    <div class="tab-content" style=" overflow: hidden; height: 100%; position: relative;">
+      <div class="tab-pane active" id="navigatorTab" style="height: 100%; width: 100%;">
+        <div class="card card-small card-tab" style="margin-bottom: 0; height:100%">
           <div class="card-body" style="margin-top: 0; height: 100%;">
             <div class="assist" data-bind="component: {
               name: 'assist-panel',
@@ -66,7 +66,7 @@ ${ layout.menubar(section='query') }
         </div>
       </div>
       <div class="tab-pane" id="settingsTab">
-        <div class="card card-small card-tab">
+        <div class="card card-small card-tab" style="height:100%">
           <div class="card-body">
             <div id="advanced-settings">
             <form id="advancedSettingsForm" action="" method="POST" class="form form-horizontal">
@@ -839,21 +839,48 @@ ${ assist.assistPanel('.table-container') }
 ${ tableStats.tableStats() }
 
 <style type="text/css">
+  html {
+    height: 100%;
+  }
+
+  body {
+    height:100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  #beeswax-execute {
+    position: absolute;
+    bottom: 0;
+    top: 80px;
+    width: 100%;
+  }
+
+  #query-editor {
+    position: relative;
+    height: 100%;
+  }
+
   h1 {
     margin-bottom: 5px;
   }
 
   .panel-container {
+    height:100%;
     width: 100%;
     position: relative;
   }
 
   .left-panel {
+    overflow-y: hidden;
     position: absolute;
+    top: 0;
+    bottom: 0;
   }
 
   .resizer {
     position: absolute;
+    height: 100%;
     width: 20px;
     text-align: center;
     z-index: 1000;
@@ -867,6 +894,10 @@ ${ tableStats.tableStats() }
 
   .right-panel {
     position: absolute;
+    overflow-y: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
   }
 
   #chooseFile, #chooseFolder, #choosePath {
@@ -1017,6 +1048,8 @@ ${ tableStats.tableStats() }
   }
 
   .table-container {
+    height: 100%;
+    overflow-y: auto;
     margin-right:10px;
   }
 
@@ -1116,7 +1149,7 @@ var leftPanelWidth = $.totalStorage("${app_name}_left_panel_width") != null ? $.
 $(".left-panel").css("width", leftPanelWidth + "px");
 $(".right-panel").css("left", leftPanelWidth + 20 + "px");
 
-var codeMirror, resizeNavigator, dataTable, renderRecent, syncWithHive;
+var codeMirror, dataTable, renderRecent, syncWithHive;
 
 var HIVE_AUTOCOMPLETE_BASE_URL = "${ autocomplete_base_url | n,unicode }";
 var HIVE_AUTOCOMPLETE_FAILS_QUIETLY_ON = [500]; // error codes from beeswax/views.py - autocomplete
@@ -1329,11 +1362,6 @@ $(document).ready(function () {
     });
   });
 
-  resizeNavigator = function () {
-    $(".resizer").css("height", $(window).height() + "px");
-    $("#navigator .card").css("height", $(window).height() + "px");
-    $(".table-container").css("max-height", ($(window).height() - 180) + "px").css("overflow-y", "auto");
-  };
 
   $(document).on("click", "#expandResults", function(){
     $("#resultTablejHueTableExtenderClonedContainer").remove();
@@ -1351,9 +1379,6 @@ $(document).ready(function () {
     }
     window.setTimeout(reinitializeTable, 200);
   });
-
-  resizeNavigator();
-  window.setTimeout(resizeNavigator, 200);
 
   $(document).on("click", ".column-selector", function () {
     var _t = $("#resultTable");
@@ -1474,22 +1499,6 @@ $(document).ready(function () {
   });
 
   initQueryField();
-
-  var resizeTimeout = -1;
-  var winWidth = $(window).width();
-  var winHeight = $(window).height();
-
-  $(window).on("resize", function () {
-    window.clearTimeout(resizeTimeout);
-    resizeTimeout = window.setTimeout(function () {
-      // prevents endless loop in IE8
-      if (winWidth != $(window).width() || winHeight != $(window).height()) {
-        resizeNavigator();
-        winWidth = $(window).width();
-        winHeight = $(window).height();
-      }
-    }, 200);
-  });
 
   function initQueryField() {
     if ($("#queryField").val() == "") {
